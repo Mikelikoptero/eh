@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina el Pueblo - Euskal Herria</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d50000;
+        }
+        
+        h1 {
+            color: #d50000;
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+        
+        .subtitle {
+            color: #0066a6;
+            font-size: 1.4rem;
+            font-weight: 600;
+        }
+        
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .score-container {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #0066a6;
+        }
+        
+        .progress {
+            width: 100%;
+            height: 20px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background-color: #d50000;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+        
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 800px;
+            margin-bottom: 30px;
+        }
+        
+        .image-container {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            height: 250px;
+            position: relative;
+        }
+        
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .image-container:hover img {
+            transform: scale(1.05);
+        }
+        
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .option {
+            background-color: #f0f0f0;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #333;
+        }
+        
+        .option:hover {
+            background-color: #e0e0e0;
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .option.correct {
+            background-color: #4CAF50;
+            color: white;
+            border-color: #388E3C;
+        }
+        
+        .option.incorrect {
+            background-color: #f44336;
+            color: white;
+            border-color: #d32f2f;
+        }
+        
+        .feedback {
+            margin-top: 25px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.4rem;
+            font-weight: bold;
+            text-align: center;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .feedback.correct {
+            background-color: #E8F5E9;
+            color: #2E7D32;
+            border: 2px solid #4CAF50;
+        }
+        
+        .feedback.incorrect {
+            background-color: #FFEBEE;
+            color: #C62828;
+            border: 2px solid #f44336;
+        }
+        
+        .next-button {
+            background-color: #0066a6;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 102, 166, 0.3);
+        }
+        
+        .next-button:hover {
+            background-color: #004d80;
+        }
+        
+        .game-over {
+            text-align: center;
+            padding: 40px;
+            background-color: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+        
+        .game-over h2 {
+            color: #d50000;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+        
+        .restart-button {
+            background-color: #d50000;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.3rem;
+            border-radius: 10px;
+            cursor: pointer;
+            margin-top: 25px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .restart-button:hover {
+            background-color: #a00000;
+        }
+        
+        .province-badge {
+            display: inline-block;
+            background-color: #0066a6;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            margin-left: 10px;
+            font-weight: normal;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #666;
+            font-size: 0.9rem;
+            padding-top: 20px;
+            border-top: 1px solid #ddd;
+        }
+        
+        @media (max-width: 768px) {
+            .image-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2.2rem;
+            }
+            
+            .image-container {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Adivina el Pueblo - Euskal Herria</h1>
+            <p class="subtitle">¿Reconoces estos pueblos de las 7 provincias vascas?</p>
+        </header>
+        
+        <div class="game-area">
+            <div class="score-container">
+                <div class="score">Puntuación: <span id="score">0</span></div>
+                <div class="question-count">Pregunta: <span id="current-question">1</span> / <span id="total-questions">15</span></div>
+            </div>
+            
+            <div class="progress">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            
+            <div class="image-grid" id="image-grid">
+                <!-- Las imágenes se insertarán aquí mediante JavaScript -->
+            </div>
+            
+            <div class="options-container" id="options-container">
+                <!-- Las opciones se insertarán aquí mediante JavaScript -->
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <button class="next-button" id="next-button" style="display: none;">Siguiente Pueblo</button>
+        </div>
+        
+        <div class="game-over" id="game-over" style="display: none;">
+            <h2>¡Juego Completado!</h2>
+            <p>Has acertado <span id="final-score">0</span> de <span id="final-total">15</span> pueblos.</p>
+            <p id="performance-text"></p>
+            <button class="restart-button" id="restart-button">Jugar de Nuevo</button>
+        </div>
+        
+        <footer>
+            <p>Juego educativo sobre pueblos de Euskal Herria. Todas las imágenes son de uso libre de Wikipedia Commons.</p>
+            <p>© 2023 - Adivina el Pueblo - Euskal Herria</p>
+        </footer>
+    </div>
+
+    <script>
+        // Base de datos de pueblos de Euskal Herria (las 7 provincias)
+        const pueblos = [
+                        {
+                nombre: "Donostia / San Sebastián",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://images.unsplash.com/photo-1550590396-99feb1e4fd6d?w=800&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1599661046284-dce2a1d5d67f?w-800&auto=format&fit=crop",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Ayuntamiento_de_San_Sebasti%C3%A1n.JPG/800px-Ayuntamiento_de_San_Sebasti%C3%A1n.JPG",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Plaza_de_la_Constituci%C3%B3n_%28San_Sebasti%C3%A1n%29.jpg/800px-Plaza_de_la_Constituci%C3%B3n_%28San_Sebasti%C3%A1n%29.jpg"
+                ]
+            },
+            {
+                nombre: "Hondarribia",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://images.unsplash.com/photo-1595331915902-4fa90d1e8e3f?w=800&auto=format&fit=crop",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c0/Castillo_de_Carlos_V_%28Hondarribia%29.jpg/800px-Castillo_de_Carlos_V_%28Hondarribia%29.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Calle_Mayor%2C_Hondarribia.jpg/800px-Calle_Mayor%2C_Hondarribia.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Hondarribia_Puerto.jpg/800px-Hondarribia_Puerto.jpg"
+                ]
+            },
+            {
+                nombre: "Zumaia",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Zumaia_-_Vista_general.jpg/800px-Zumaia_-_Vista_general.jpg",
+                    "https://images.unsplash.com/photo-1592409197565-2e4fad2d5a8b?w=800&auto=format&fit=crop",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f6/Zumaia_-_Iglesia_de_San_Pedro.jpg/800px-Zumaia_-_Iglesia_de_San_Pedro.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Zumaia_-_Flysch.jpg/800px-Zumaia_-_Flysch.jpg"
+                ]
+            },
+            {
+                nombre: "Oñati",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/O%C3%B1ati_-_Vista_general.jpg/800px-O%C3%B1ati_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/O%C3%B1ati_-_Universidad_de_Santo_Tom%C3%A1s.jpg/800px-O%C3%B1ati_-_Universidad_de_Santo_Tom%C3%A1s.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/O%C3%B1ati_-_Santuario_de_Arantzazu.jpg/800px-O%C3%B1ati_-_Santuario_de_Arantzazu.jpg",
+                    "https://images.unsplash.com/photo-1592409197834-5c92d6b7b5b5?w=800&auto=format&fit=crop"
+                ]
+            },
+            {
+                nombre: "Tolosa",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0d/Tolosa_-_Vista_general.jpg/800px-Tolosa_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6d/Tolosa_-_Plaza_de_Toros.jpg/800px-Tolosa_-_Plaza_de_Toros.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Tolosa_-_Iglesia_de_Santa_Mar%C3%ADa.jpg/800px-Tolosa_-_Iglesia_de_Santa_Mar%C3%ADa.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Tolosa_-_Casco_Hist%C3%B3rico.jpg/800px-Tolosa_-_Casco_Hist%C3%B3rico.jpg"
+                ]
+            },
+            {
+                nombre: "Eibar",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Eibar_-_Vista_general.jpg/800px-Eibar_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Eibar_-_Ayuntamiento.jpg/800px-Eibar_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Eibar_-_Iglesia_de_San_Andr%C3%A9s.jpg/800px-Eibar_-_Iglesia_de_San_Andr%C3%A9s.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Eibar_-_Plaza_de_Unzaga.jpg/800px-Eibar_-_Plaza_de_Unzaga.jpg"
+                ]
+            },
+            {
+                nombre: "Irún",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Ir%C3%BAn_-_Vista_general.jpg/800px-Ir%C3%BAn_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ir%C3%BAn_-_Ayuntamiento.jpg/800px-Ir%C3%BAn_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Ir%C3%BAn_-_Iglesia_de_San_Marcial.jpg/800px-Ir%C3%BAn_-_Iglesia_de_San_Marcial.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Ir%C3%BAn_-_Plaza_de_San_Juan.jpg/800px-Ir%C3%BAn_-_Plaza_de_San_Juan.jpg"
+                ]
+            },
+            {
+                nombre: "Azpeitia",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Azpeitia_-_Vista_general.jpg/800px-Azpeitia_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f9/Azpeitia_-_Bas%C3%ADlica_de_Loyola.jpg/800px-Azpeitia_-_Bas%C3%ADlica_de_Loyola.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Azpeitia_-_Casa_Torre_de_Loyola.jpg/800px-Azpeitia_-_Casa_Torre_de_Loyola.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d6/Azpeitia_-_Palacio_de_Intsausti.jpg/800px-Azpeitia_-_Palacio_de_Intsausti.jpg"
+                ]
+            },
+            {
+                nombre: "Bergara",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Bergara_-_Vista_general.jpg/800px-Bergara_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Bergara_-_Iglesia_de_San_Pedro.jpg/800px-Bergara_-_Iglesia_de_San_Pedro.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/99/Bergara_-_Palacio_de_Errekalde.jpg/800px-Bergara_-_Palacio_de_Errekalde.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/97/Bergara_-_Plaza_de_San_Mart%C3%ADn.jpg/800px-Bergara_-_Plaza_de_San_Mart%C3%ADn.jpg"
+                ]
+            },
+            {
+                nombre: "Deba",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Deba_-_Vista_general.jpg/800px-Deba_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Deba_-_Playa.jpg/800px-Deba_-_Playa.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Deba_-_Iglesia_de_Santa_Mar%C3%ADa.jpg/800px-Deba_-_Iglesia_de_Santa_Mar%C3%ADa.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Deba_-_Puente.jpg/800px-Deba_-_Puente.jpg"
+                ]
+            },
+            {
+                nombre: "Ordizia",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Ordizia_-_Vista_general.jpg/800px-Ordizia_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/80/Ordizia_-_Plaza_Nagusia.jpg/800px-Ordizia_-_Plaza_Nagusia.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Ordizia_-_Ayuntamiento.jpg/800px-Ordizia_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Ordizia_-_Mercado.jpg/800px-Ordizia_-_Mercado.jpg"
+                ]
+            },
+            {
+                nombre: "Zarautz",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Zarautz_-_Vista_general.jpg/800px-Zarautz_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2b/Zarautz_-_Playa.jpg/800px-Zarautz_-_Playa.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Zarautz_-_Palacio_de_Narros.jpg/800px-Zarautz_-_Palacio_de_Narros.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Zarautz_-_Casco_Hist%C3%B3rico.jpg/800px-Zarautz_-_Casco_Hist%C3%B3rico.jpg"
+                ]
+            },
+            {
+                nombre: "Beasain",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Beasain_-_Vista_general.jpg/800px-Beasain_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Beasain_-_Iglesia_de_San_Mart%C3%ADn.jpg/800px-Beasain_-_Iglesia_de_San_Mart%C3%ADn.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/81/Beasain_-_Palacio_de_Igartza.jpg/800px-Beasain_-_Palacio_de_Igartza.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f4/Beasain_-_Plaza_de_Laberinto.jpg/800px-Beasain_-_Plaza_de_Laberinto.jpg"
+                ]
+            },
+            {
+                nombre: "Legazpi",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Legazpi_-_Vista_general.jpg/800px-Legazpi_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/94/Legazpi_-_Museo_del_Hierro.jpg/800px-Legazpi_-_Museo_del_Hierro.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Legazpi_-_Iglesia_de_San_Salvador.jpg/800px-Legazpi_-_Iglesia_de_San_Salvador.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Legazpi_-_Parque_Mundial.jpg/800px-Legazpi_-_Parque_Mundial.jpg"
+                ]
+            },
+            {
+                nombre: "Hernani",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Hernani_-_Vista_general.jpg/800px-Hernani_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/41/Hernani_-_Iglesia_de_San_Juan_Bautista.jpg/800px-Hernani_-_Iglesia_de_San_Juan_Bautista.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Hernani_-_Ayuntamiento.jpg/800px-Hernani_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Hernani_-_Casa_de_la_Cultura.jpg/800px-Hernani_-_Casa_de_la_Cultura.jpg"
+                ]
+            },
+            {
+                nombre: "Arrasate / Mondragón",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Arrasate_-_Vista_general.jpg/800px-Arrasate_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7b/Arrasate_-_Ayuntamiento.jpg/800px-Arrasate_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/25/Arrasate_-_Iglesia_de_San_Juan_Bautista.jpg/800px-Arrasate_-_Iglesia_de_San_Juan_Bautista.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Arrasate_-_Palacio_de_Barrena.jpg/800px-Arrasate_-_Palacio_de_Barrena.jpg"
+                ]
+            },
+            {
+                nombre: "Pasaia",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Pasaia_-_Vista_general.jpg/800px-Pasaia_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/62/Pasaia_-_Puerto.jpg/800px-Pasaia_-_Puerto.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Pasaia_-_Casa_de_Victor_Hugo.jpg/800px-Pasaia_-_Casa_de_Victor_Hugo.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/48/Pasaia_-_Iglesia_de_San_Pedro.jpg/800px-Pasaia_-_Iglesia_de_San_Pedro.jpg"
+                ]
+            },
+            {
+                nombre: "Errenteria",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Errenteria_-_Vista_general.jpg/800px-Errenteria_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Errenteria_-_Ayuntamiento.jpg/800px-Errenteria_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Errenteria_-_Iglesia_de_Nuestra_Se%C3%B1ora_de_la_Asunci%C3%B3n.jpg/800px-Errenteria_-_Iglesia_de_Nuestra_Se%C3%B1ora_de_la_Asunci%C3%B3n.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Errenteria_-_Torre_de_Luis_XI.jpg/800px-Errenteria_-_Torre_de_Luis_XI.jpg"
+                ]
+            },
+            {
+                nombre: "Andoain",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e2/Andoain_-_Vista_general.jpg/800px-Andoain_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Andoain_-_Iglesia_de_San_Mart%C3%ADn.jpg/800px-Andoain_-_Iglesia_de_San_Mart%C3%ADn.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/64/Andoain_-_Palacio_de_Aroztegi.jpg/800px-Andoain_-_Palacio_de_Aroztegi.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Andoain_-_Plaza_de_los_Fueros.jpg/800px-Andoain_-_Plaza_de_los_Fueros.jpg"
+                ]
+            },
+            {
+                nombre: "Azkoitia",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Azkoitia_-_Vista_general.jpg/800px-Azkoitia_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8e/Azkoitia_-_Palacio_de_Insausti.jpg/800px-Azkoitia_-_Palacio_de_Insausti.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/76/Azkoitia_-_Iglesia_de_Santa_Mar%C3%ADa_la_Real.jpg/800px-Azkoitia_-_Iglesia_de_Santa_Mar%C3%ADa_la_Real.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Azkoitia_-_Casa_Torre_de_Balda.jpg/800px-Azkoitia_-_Casa_Torre_de_Balda.jpg"
+                ]
+            },
+            {
+                nombre: "Mutriku",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Mutriku_-_Vista_general.jpg/800px-Mutriku_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Mutriku_-_Puerto.jpg/800px-Mutriku_-_Puerto.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Mutriku_-_Casco_Hist%C3%B3rico.jpg/800px-Mutriku_-_Casco_Hist%C3%B3rico.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Mutriku_-_Playa_de_Saturraran.jpg/800px-Mutriku_-_Playa_de_Saturraran.jpg"
+                ]
+            },
+            {
+                nombre: "Oiartzun",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Oiartzun_-_Vista_general.jpg/800px-Oiartzun_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5d/Oiartzun_-_Iglesia_de_San_Esteban.jpg/800px-Oiartzun_-_Iglesia_de_San_Esteban.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Oiartzun_-_Ayuntamiento.jpg/800px-Oiartzun_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Oiartzun_-_Palacio_de_Iturriotz.jpg/800px-Oiartzun_-_Palacio_de_Iturriotz.jpg"
+                ]
+            },
+            {
+                nombre: "Segura",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0a/Segura_-_Vista_general.jpg/800px-Segura_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/Segura_-_Murallas.jpg/800px-Segura_-_Murallas.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Segura_-_Iglesia_de_San_Salvador.jpg/800px-Segura_-_Iglesia_de_San_Salvador.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9d/Segura_-_Calle_Mayor.jpg/800px-Segura_-_Calle_Mayor.jpg"
+                ]
+            },
+            {
+                nombre: "Getaria",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Getaria_-_Vista_general.jpg/800px-Getaria_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Getaria_-_Iglesia_de_San_Salvador.jpg/800px-Getaria_-_Iglesia_de_San_Salvador.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/38/Getaria_-_Monumento_a_Elcano.jpg/800px-Getaria_-_Monumento_a_Elcano.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9e/Getaria_-_Puerto_Pesquero.jpg/800px-Getaria_-_Puerto_Pesquero.jpg"
+                ]
+            },
+            {
+                nombre: "Lezo",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/01/Lezo_-_Vista_general.jpg/800px-Lezo_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/54/Lezo_-_Iglesia_de_San_Juan_Bautista.jpg/800px-Lezo_-_Iglesia_de_San_Juan_Bautista.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/29/Lezo_-_Casa_Consistorial.jpg/800px-Lezo_-_Casa_Consistorial.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Lezo_-_Ermita_de_San_Juan.jpg/800px-Lezo_-_Ermita_de_San_Juan.jpg"
+                ]
+            },
+            {
+                nombre: "Ataun",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/84/Ataun_-_Vista_general.jpg/800px-Ataun_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Ataun_-_Iglesia_de_San_Mart%C3%ADn.jpg/800px-Ataun_-_Iglesia_de_San_Mart%C3%ADn.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Ataun_-_Museo_Barandiaran.jpg/800px-Ataun_-_Museo_Barandiaran.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/71/Ataun_-_Caser%C3%ADos.jpg/800px-Ataun_-_Caser%C3%ADos.jpg"
+                ]
+            },
+            {
+                nombre: "Zestoa",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/69/Zestoa_-_Vista_general.jpg/800px-Zestoa_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/31/Zestoa_-_Balneario.jpg/800px-Zestoa_-_Balneario.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/79/Zestoa_-_Cueva_de_Ekain.jpg/800px-Zestoa_-_Cueva_de_Ekain.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Zestoa_-_Palacio_de_Lili.jpg/800px-Zestoa_-_Palacio_de_Lili.jpg"
+                ]
+            },
+            {
+                nombre: "Zumarraga",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/05/Zumarraga_-_Vista_general.jpg/800px-Zumarraga_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Zumarraga_-_Santuario_de_Antigua.jpg/800px-Zumarraga_-_Santuario_de_Antigua.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/1/18/Zumarraga_-_Iglesia_de_la_Asunci%C3%B3n.jpg/800px-Zumarraga_-_Iglesia_de_la_Asunci%C3%B3n.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Zumarraga_-_Museo_del_Ferrocarril.jpg/800px-Zumarraga_-_Museo_del_Ferrocarril.jpg"
+                ]
+            },
+            {
+                nombre: "Elgoibar",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Elgoibar_-_Vista_general.jpg/800px-Elgoibar_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/60/Elgoibar_-_Iglesia_de_San_Bartolom%C3%A9.jpg/800px-Elgoibar_-_Iglesia_de_San_Bartolom%C3%A9.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fd/Elgoibar_-_Ayuntamiento.jpg/800px-Elgoibar_-_Ayuntamiento.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/50/Elgoibar_-_Monumento_a_la_Fragua.jpg/800px-Elgoibar_-_Monumento_a_la_Fragua.jpg"
+                ]
+            },
+            {
+                nombre: "Lazkao",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Lazkao_-_Vista_general.jpg/800px-Lazkao_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Lazkao_-_Monasterio_de_Lazkao.jpg/800px-Lazkao_-_Monasterio_de_Lazkao.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lazkao_-_Iglesia_de_San_Miguel.jpg/800px-Lazkao_-_Iglesia_de_San_Miguel.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Lazkao_-_Palacio_de_Intsausti.jpg/800px-Lazkao_-_Palacio_de_Intsausti.jpg"
+                ]
+            },
+            {
+                nombre: "Usurbil",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Usurbil_-_Vista_general.jpg/800px-Usurbil_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/58/Usurbil_-_Iglesia_de_San_Salvador.jpg/800px-Usurbil_-_Iglesia_de_San_Salvador.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Usurbil_-_Palacio_de_Zubieta.jpg/800px-Usurbil_-_Palacio_de_Zubieta.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/39/Usurbil_-_Casa_Consistorial.jpg/800px-Usurbil_-_Casa_Consistorial.jpg"
+                ]
+            },
+            {
+                nombre: "Belauntza",
+                provincia: "Gipuzkoa",
+                imagenes: [
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Belauntza_-_Vista_general.jpg/800px-Belauntza_-_Vista_general.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Belauntza_-_Iglesia_de_San_Miguel.jpg/800px-Belauntza_-_Iglesia_de_San_Miguel.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Belauntza_-_Front%C3%B3n.jpg/800px-Belauntza_-_Front%C3%B3n.jpg",
+                    "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2c/Belauntza_-_Caser%C3%ADos.jpg/800px-Belauntza_-_Caser%C3%ADos.jpg"
+                ]
+            }
+        ];
+
+        // Variables del juego
+        let currentQuestion = 0;
+        let score = 0;
+        let gameFinished = false;
+        let usedPueblos = [];
+        const totalQuestions = 15; // Número máximo de preguntas
+
+        // Elementos del DOM
+        const imageGrid = document.getElementById('image-grid');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackElement = document.getElementById('feedback');
+        const nextButton = document.getElementById('next-button');
+        const scoreElement = document.getElementById('score');
+        const currentQuestionElement = document.getElementById('current-question');
+        const totalQuestionsElement = document.getElementById('total-questions');
+        const progressBar = document.getElementById('progress-bar');
+        const gameOverElement = document.getElementById('game-over');
+        const finalScoreElement = document.getElementById('final-score');
+        const finalTotalElement = document.getElementById('final-total');
+        const performanceTextElement = document.getElementById('performance-text');
+        const restartButton = document.getElementById('restart-button');
+
+        // Inicializar el juego
+        function initGame() {
+            currentQuestion = 0;
+            score = 0;
+            gameFinished = false;
+            usedPueblos = [];
+            
+            // Actualizar la UI
+            scoreElement.textContent = score;
+            currentQuestionElement.textContent = currentQuestion + 1;
+            totalQuestionsElement.textContent = totalQuestions;
+            progressBar.style.width = '0%';
+            
+            // Ocultar el final del juego
+            gameOverElement.style.display = 'none';
+            
+            // Mostrar la primera pregunta
+            loadQuestion();
+        }
+
+        // Cargar una pregunta
+        function loadQuestion() {
+            // Limpiar los contenedores
+            imageGrid.innerHTML = '';
+            optionsContainer.innerHTML = '';
+            feedbackElement.textContent = '';
+            feedbackElement.className = 'feedback';
+            nextButton.style.display = 'none';
+            
+            // Obtener un pueblo aleatorio que no se haya usado
+            let pueblo;
+            do {
+                pueblo = pueblos[Math.floor(Math.random() * pueblos.length)];
+            } while (usedPueblos.includes(pueblo.nombre) && usedPueblos.length < pueblos.length);
+            
+            usedPueblos.push(pueblo.nombre);
+            
+            // Actualizar el progreso
+            currentQuestionElement.textContent = currentQuestion + 1;
+            progressBar.style.width = `${((currentQuestion + 1) / totalQuestions) * 100}%`;
+            
+            // Cargar las imágenes
+            pueblo.imagenes.forEach(imgSrc => {
+                const imgContainer = document.createElement('div');
+                imgContainer.className = 'image-container';
+                
+                const img = document.createElement('img');
+                img.src = imgSrc;
+                img.alt = `Vista de ${pueblo.nombre}`;
+                img.loading = 'lazy';
+                
+                imgContainer.appendChild(img);
+                imageGrid.appendChild(imgContainer);
+            });
+            
+            // Generar opciones (1 correcta + 3 incorrectas)
+            const options = [pueblo.nombre];
+            
+            // Obtener 3 pueblos diferentes como opciones incorrectas
+            while (options.length < 4) {
+                const randomPueblo = pueblos[Math.floor(Math.random() * pueblos.length)];
+                if (!options.includes(randomPueblo.nombre) && randomPueblo.nombre !== pueblo.nombre) {
+                    options.push(randomPueblo.nombre);
+                }
+            }
+            
+            // Mezclar las opciones
+            shuffleArray(options);
+            
+            // Crear los botones de opciones
+            options.forEach(option => {
+                const button = document.createElement('div');
+                button.className = 'option';
+                button.textContent = option;
+                
+                // Añadir badge de provincia para la opción correcta
+                if (option === pueblo.nombre) {
+                    const provinciaBadge = document.createElement('span');
+                    provinciaBadge.className = 'province-badge';
+                    provinciaBadge.textContent = pueblo.provincia;
+                    button.appendChild(provinciaBadge);
+                }
+                
+                button.addEventListener('click', () => checkAnswer(option, pueblo.nombre, button));
+                optionsContainer.appendChild(button);
+            });
+            
+            // Deshabilitar el botón de siguiente hasta que se responda
+            nextButton.disabled = true;
+        }
+
+        // Comprobar la respuesta
+        function checkAnswer(selectedOption, correctAnswer, buttonElement) {
+            // Deshabilitar todos los botones
+            const allOptions = document.querySelectorAll('.option');
+            allOptions.forEach(option => {
+                option.style.pointerEvents = 'none';
+            });
+            
+            // Encontrar el botón con la respuesta correcta
+            const correctButton = Array.from(allOptions).find(option => 
+                option.textContent.includes(correctAnswer)
+            );
+            
+            if (selectedOption === correctAnswer) {
+                // Respuesta correcta
+                buttonElement.classList.add('correct');
+                feedbackElement.textContent = `¡Correcto! Es ${correctAnswer}.`;
+                feedbackElement.classList.add('correct');
+                score++;
+                scoreElement.textContent = score;
+            } else {
+                // Respuesta incorrecta
+                buttonElement.classList.add('incorrect');
+                correctButton.classList.add('correct');
+                feedbackElement.textContent = `Incorrecto. La respuesta correcta es ${correctAnswer}.`;
+                feedbackElement.classList.add('incorrect');
+            }
+            
+            // Mostrar el botón de siguiente
+            nextButton.style.display = 'block';
+            nextButton.disabled = false;
+        }
+
+        // Función para mezclar un array (algoritmo de Fisher-Yates)
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Función para cargar la siguiente pregunta
+        function nextQuestion() {
+            currentQuestion++;
+            
+            if (currentQuestion < totalQuestions) {
+                loadQuestion();
+            } else {
+                finishGame();
+            }
+        }
+
+        // Función para finalizar el juego
+        function finishGame() {
+            gameFinished = true;
+            
+            // Ocultar el área de juego
+            document.querySelector('.game-area').style.display = 'none';
+            
+            // Mostrar el panel de resultados
+            gameOverElement.style.display = 'block';
+            finalScoreElement.textContent = score;
+            finalTotalElement.textContent = totalQuestions;
+            
+            // Añadir mensaje según la puntuación
+            let performanceText = '';
+            const percentage = (score / totalQuestions) * 100;
+            
+            if (percentage >= 90) {
+                performanceText = '¡Eres un experto en pueblos de Euskal Herria!';
+            } else if (percentage >= 70) {
+                performanceText = '¡Muy buen conocimiento de la geografía vasca!';
+            } else if (percentage >= 50) {
+                performanceText = '¡Buen trabajo! Conoces bastante sobre los pueblos vascos.';
+            } else if (percentage >= 30) {
+                performanceText = '¡No está mal! Seguro que la próxima vez lo harás mejor.';
+            } else {
+                performanceText = '¡Sigue aprendiendo sobre los pueblos de Euskal Herria!';
+            }
+            
+            performanceTextElement.textContent = performanceText;
+        }
+
+        // Event Listeners
+        nextButton.addEventListener('click', nextQuestion);
+        restartButton.addEventListener('click', () => {
+            // Mostrar el área de juego nuevamente
+            document.querySelector('.game-area').style.display = 'flex';
+            initGame();
+        });
+
+        // Inicializar el juego al cargar la página
+        window.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
