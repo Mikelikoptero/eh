@@ -4,6 +4,16 @@
 <meta charset="utf-8" />
 <title>Adivina el pueblo vasco</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<!-- CSP explícita compatible con GitHub Pages + Wikimedia -->
+<meta http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        img-src 'self' https://upload.wikimedia.org data:;
+        script-src 'self' 'unsafe-inline';
+        style-src 'self' 'unsafe-inline';
+      ">
+
 <style>
   body{font-family:system-ui, sans-serif; background:#f5f7fa; margin:0; padding:2rem; text-align:center}
   h1{color:#004d99}
@@ -26,35 +36,29 @@
 <div id="resultado"></div>
 
 <script>
-/* 1. Base de datos: pueblo → 4 imágenes (Wikimedia Commons, dominio público) */
 const base = {
   Bilbao: [
     "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Bilbao_-_Vista_a%C3%A9rea.jpg/640px-Bilbao_-_Vista_a%C3%A9rea.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/Guggenheim_Bilbao_-_01.jpg/640px-Guggenheim_Bilbao_-_01.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5c/Bilbao_Arteixo.jpg/640px-Bilbao_Arteixo.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Bilbao_--_Casco_Viejo_--_Plaza_Nueva_--_2014_--_A.jpg/640px-Bilbao_--_Casco_Viejo_--_Plaza_Nueva_--_2014_--_A.jpg"
   ],
   Donostia: [
     "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/San_Sebasti%C3%A1n_-_Donostia_5.jpg/640px-San_Sebasti%C3%A1n_-_Donostia_5.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/La_Concha_beach_in_San_Sebasti%C3%A1n.jpg/640px-La_Concha_beach_in_San_Sebasti%C3%A1n.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Donostia_-_Kontxa_hondartza_4.jpg/640px-Donostia_-_Kontxa_hondartza_4.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Donostia_-_Parte_Vieja_37.jpg/640px-Donostia_-_Parte_Vieja_37.jpg"
   ],
   Gernika: [
     "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4c/Gernikako_Arbola.jpg/640px-Gernikako_Arbola.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Gernika-Lumo_-_Ayuntamiento_1.jpg/640px-Gernika-Lumo_-_Ayuntamiento_1.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Gernika_-_Pozas_2.jpg/640px-Gernika_-_Pozas_2.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Gernika_Lumo_parque_de_paz_001.jpg/640px-Gernika_Lumo_parque_de_paz_001.jpg"
   ],
   Getxo: [
     "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Getxo_Algorta_vista.jpg/640px-Getxo_Algorta_vista.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Puente_Vizcaya_6.jpg/640px-Puente_Vizcaya_6.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/8/87/Getxo_-_Aiboa_2.jpg/640px-Getxo_-_Aiboa_2.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Algorta_014.jpg/640px-Algorta_014.jpg"
   ],
   Bermeo: [
     "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Bermeo_-_Puerto_1.jpg/640px-Bermeo_-_Puerto_1.jpg",
-    "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3c/Bermeo_-_Casa_consistorial_1.jpg/640px-Bermeo_-_Casa_consistorial_1.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2f/Bermeo_-_San_Juan_de_Gaztelugatxe_08.jpg/640px-Bermeo_-_San_Juan_de_Gaztelugatxe_08.jpg",
     "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Bermeo_-_Atalaya_2.jpg/640px-Bermeo_-_Atalaya_2.jpg"
   ]
@@ -68,13 +72,24 @@ let score = 0;
 
 const $ = id => document.getElementById(id);
 
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
 
 function cargarFotos(pueblo){
-  const urls = base[pueblo];
-  const cont = $("fotos"); cont.innerHTML = "";
-  urls.forEach(u=>{
-    cont.innerHTML += `<img src="${u}" loading="lazy" />`;
+  const cont = $("fotos");
+  cont.innerHTML = "";
+  base[pueblo].forEach(u=>{
+    cont.innerHTML += `
+      <img src="${u}"
+           loading="lazy"
+           referrerpolicy="no-referrer"
+           alt="Foto de ${pueblo}">
+    `;
   });
 }
 
@@ -85,7 +100,8 @@ function generarOpciones(respuesta){
     if(!opciones.includes(azar)) opciones.push(azar);
   }
   shuffle(opciones);
-  const cont = $("opciones"); cont.innerHTML = "";
+  const cont = $("opciones");
+  cont.innerHTML = "";
   opciones.forEach(o=>{
     const btn = document.createElement("button");
     btn.textContent = o;
@@ -95,21 +111,20 @@ function generarOpciones(respuesta){
 }
 
 function comprobar(respuesta){
-  const btns = document.querySelectorAll("button");
-  btns.forEach(b=>b.disabled=true);
+  document.querySelectorAll("button").forEach(b=>b.disabled=true);
   const ok = respuesta === correcto;
-  if(ok){score++; $("score").textContent=score;}
+  if(ok){ score++; $("score").textContent = score; }
   $("resultado").textContent = ok ? "¡Correcto!" : `Incorrecto. Era ${correcto}`;
   setTimeout(siguienteRonda, 1500);
 }
 
 function siguienteRonda(){
   ronda++;
-  $("ronda").textContent=ronda;
-  if(ronda>TOTAL){
+  $("ronda").textContent = ronda;
+  if(ronda > TOTAL){
     $("fotos").innerHTML="";
     $("opciones").innerHTML="";
-    $("resultado").innerHTML=`<h2>¡Juego terminado!</h2><p>Tu puntuación: ${score} / ${TOTAL}</p>`;
+    $("resultado").innerHTML = `<h2>¡Juego terminado!</h2><p>Tu puntuación: ${score} / ${TOTAL}</p>`;
     return;
   }
   correcto = pueblos[Math.floor(Math.random()*pueblos.length)];
@@ -118,7 +133,6 @@ function siguienteRonda(){
   $("resultado").textContent="";
 }
 
-/* Arrancar */
 siguienteRonda();
 </script>
 </body>
